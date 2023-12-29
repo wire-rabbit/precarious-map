@@ -7,6 +7,7 @@ import (
 )
 
 func TestStartUI(t *testing.T) {
+
 	var buf bytes.Buffer
 	var in bytes.Buffer
 	in.Write([]byte("q"))
@@ -19,5 +20,18 @@ func TestStartUI(t *testing.T) {
 
 	if buf.Len() == 0 {
 		t.Fatalf("no output (we should at least see newlines)")
+	}
+
+	expectedColumns := []string{
+		"Name",
+		"AZ",
+		"Instance ID",
+		"Public IP",
+		"State",
+	}
+	for _, column := range expectedColumns {
+		if !bytes.Contains(buf.Bytes(), []byte(column)) {
+			t.Errorf("expected column %q not found", column)
+		}
 	}
 }

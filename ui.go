@@ -37,7 +37,21 @@ func (m model) View() string {
 }
 
 func getTableLayout() table.Model {
-	t := table.New()
+	columns := []table.Column{
+		{Title: "Name", Width: 25},
+		{Title: "AZ", Width: 10},
+		{Title: "Instance ID", Width: 25},
+		{Title: "Public IP", Width: 20},
+		{Title: "State", Width: 10},
+	}
+
+	rows := []table.Row{}
+
+	t := table.New(
+		table.WithColumns(columns),
+		table.WithRows(rows),
+	)
+
 	return t
 }
 
