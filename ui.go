@@ -11,17 +11,33 @@ import (
 
 var baseStyle = lipgloss.NewStyle()
 
+type FetchFunctionType func() []InstanceDetail
+
+type InstanceDetail struct {
+	InstanceId       string
+	ImageId          string
+	AZ               string
+	State            string
+	PrivateIpAddress string
+	PublicIpAddress  string
+	Name             string
+}
+
 type model struct {
-	table table.Model
+	table         table.Model
+	instances     []InstanceDetail
+	fetchFunction FetchFunctionType
 }
 
 func (m model) Init() tea.Cmd {
-	return nil
+	return getTableData(m.fetchFunction)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-
+	case FetchFunctionType:
+		m.instances = msg()
+		m.table = getTableLayout(m.instances)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -36,7 +52,13 @@ func (m model) View() string {
 	return baseStyle.Render(m.table.View())
 }
 
-func getTableLayout() table.Model {
+func getTableData(f FetchFunctionType) tea.Cmd {
+	return func() tea.Msg {
+		return f
+	}
+}
+
+func getTableLayout(instances []InstanceDetail) table.Model {
 	columns := []table.Column{
 		{Title: "Name", Width: 25},
 		{Title: "AZ", Width: 10},
@@ -46,6 +68,16 @@ func getTableLayout() table.Model {
 	}
 
 	rows := []table.Row{}
+	for _, instance := range instances {
+		rows = append(rows,
+			table.Row{
+				instance.Name,
+				instance.AZ,
+				instance.InstanceId,
+				instance.PublicIpAddress,
+				instance.State,
+			})
+	}
 
 	t := table.New(
 		table.WithColumns(columns),
@@ -57,7 +89,10 @@ func getTableLayout() table.Model {
 
 func startUI(options AppOptions) {
 
-	m := model{getTableLayout()}
+	m := model{table: getTableLayout([]InstanceDetail{})}
+	m.fetchFunction = func() []InstanceDetail {
+		return []InstanceDetail{}
+	}
 
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		fmt.Println("Unable to start the UI:", err.Error())
