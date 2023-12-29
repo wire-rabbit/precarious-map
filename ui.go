@@ -90,9 +90,7 @@ func getTableLayout(instances []InstanceDetail) table.Model {
 func startUI(options AppOptions) {
 
 	m := model{table: getTableLayout([]InstanceDetail{})}
-	m.fetchFunction = func() []InstanceDetail {
-		return []InstanceDetail{}
-	}
+	m.fetchFunction = fetchEc2Data
 
 	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		fmt.Println("Unable to start the UI:", err.Error())

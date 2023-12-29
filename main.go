@@ -54,5 +54,7 @@ func main() {
 		os.Exit(0)
 	}
 
+	awsClient = getAwsClient(Options)
+
 	startUI(Options)
 }
