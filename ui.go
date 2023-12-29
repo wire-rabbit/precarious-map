@@ -94,7 +94,7 @@ func startUI(options AppOptions) {
 		return []InstanceDetail{}
 	}
 
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		fmt.Println("Unable to start the UI:", err.Error())
 		os.Exit(1)
 	}
