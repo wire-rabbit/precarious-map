@@ -48,4 +48,6 @@ func main() {
 	if Options.Help {
 		os.Exit(0)
 	}
+
+	startUI(Options)
 }
