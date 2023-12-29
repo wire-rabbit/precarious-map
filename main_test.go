@@ -8,24 +8,35 @@ import (
 func TestHandleOptions(t *testing.T) {
 
 	tests := []struct {
-		desc     string
-		showHelp bool
-		region   string
-		profile  string
-		want     AppOptions
+		desc    string
+		help    bool
+		region  string
+		profile string
+		want    AppOptions
 	}{
 		{
-			showHelp: true,
-			want:     AppOptions{ShowHelp: true},
+			desc: "help flag supplied",
+			help: true,
+			want: AppOptions{Help: true},
+		},
+		{
+			desc:   "region supplied",
+			region: "us-west-2",
+			want:   AppOptions{Region: "us-west-2"},
+		},
+		{
+			desc:    "profile supplied",
+			profile: "devops-profile",
+			want:    AppOptions{Profile: "devops-profile"},
 		},
 	}
 
 	for _, test := range tests {
 
 		buffer := bytes.Buffer{}
-		got := HandleOptions(&buffer, true, "", "")
+		got := HandleOptions(&buffer, test.help, test.region, test.profile)
 
-		if test.showHelp && buffer.String() != helpText {
+		if test.help && buffer.String() != helpText {
 			t.Errorf("%s: help text want: %q but got %q", test.desc, helpText, buffer.String())
 		}
 

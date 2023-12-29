@@ -8,9 +8,9 @@ import (
 )
 
 type AppOptions struct {
-	ShowHelp bool
-	Region   string
-	Profile  string
+	Help    bool
+	Region  string
+	Profile string
 }
 
 var Options AppOptions
@@ -24,25 +24,28 @@ const helpText = `
   * --profile - set the AWS CLI profile to use for authentication
 `
 
-func HandleOptions(writer io.Writer, showHelp bool, region string, profile string) AppOptions {
+func HandleOptions(writer io.Writer, help bool, region string, profile string) AppOptions {
 
-	if showHelp {
+	if help {
 		fmt.Fprintf(writer, helpText)
+		return AppOptions{Help: true}
 	}
 
 	return AppOptions{
-		ShowHelp: showHelp,
+		Help:    help,
+		Region:  region,
+		Profile: profile,
 	}
 }
 
 func main() {
-	showHelp := flag.Bool("help", false, "show help")
+	help := flag.Bool("help", false, "show help")
 	region := flag.String("region", "us-east-1", "set the AWS region")
 	profile := flag.String("profile", "", "set the AWS CLI profile to use for authentication")
 	flag.Parse()
 
-	Options = HandleOptions(os.Stdout, *showHelp, *region, *profile)
-	if Options.ShowHelp {
+	Options = HandleOptions(os.Stdout, *help, *region, *profile)
+	if Options.Help {
 		os.Exit(0)
 	}
 }
