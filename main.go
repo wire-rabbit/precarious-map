@@ -31,7 +31,7 @@ func HandleOptions(writer io.Writer, showHelp bool, region string, profile strin
 	}
 
 	return AppOptions{
-		// ...
+		ShowHelp: showHelp,
 	}
 }
 

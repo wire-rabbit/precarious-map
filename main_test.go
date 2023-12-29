@@ -6,14 +6,31 @@ import (
 )
 
 func TestHandleOptions(t *testing.T) {
-	buffer := bytes.Buffer{}
 
-	HandleOptions(&buffer, true, "", "")
+	tests := []struct {
+		desc     string
+		showHelp bool
+		region   string
+		profile  string
+		want     AppOptions
+	}{
+		{
+			showHelp: true,
+			want:     AppOptions{ShowHelp: true},
+		},
+	}
 
-	got := buffer.String()
-	want := helpText
+	for _, test := range tests {
 
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
+		buffer := bytes.Buffer{}
+		got := HandleOptions(&buffer, true, "", "")
+
+		if test.showHelp && buffer.String() != helpText {
+			t.Errorf("%s: help text want: %q but got %q", test.desc, helpText, buffer.String())
+		}
+
+		if test.want != got {
+			t.Errorf("%s: wanted options %+v but got %+v", test.desc, test.want, got)
+		}
 	}
 }
