@@ -42,6 +42,11 @@ func main() {
 	help := flag.Bool("help", false, "show help")
 	region := flag.String("region", "us-east-1", "set the AWS region")
 	profile := flag.String("profile", "", "set the AWS CLI profile to use for authentication")
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, helpText)
+	}
+
 	flag.Parse()
 
 	Options = HandleOptions(os.Stdout, *help, *region, *profile)
