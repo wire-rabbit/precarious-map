@@ -2,8 +2,9 @@ package main
 
 import (
 	"bytes"
-	tea "github.com/charmbracelet/bubbletea"
 	"testing"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func TestStartUI(t *testing.T) {
