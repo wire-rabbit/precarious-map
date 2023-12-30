@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -18,7 +19,8 @@ func getAwsClient(options AppOptions) *ec2.Client {
 			config.WithSharedConfigProfile("iamadmin-general"),
 		)
 		if err != nil {
-			log.Fatalf("error setting up AWS client: %s", err.Error())
+			fmt.Printf("error setting up AWS client: %s\n", err)
+			os.Exit(1)
 		}
 		return ec2.NewFromConfig(cfg)
 	}
@@ -27,7 +29,8 @@ func getAwsClient(options AppOptions) *ec2.Client {
 		context.Background(),
 	)
 	if err != nil {
-		log.Fatalf("error setting up AWS client: %s", err.Error())
+		fmt.Printf("error setting up AWS client: %s\n", err)
+		os.Exit(1)
 	}
 	return ec2.NewFromConfig(cfg)
 }
@@ -49,7 +52,8 @@ func processEc2Data(data *ec2.DescribeInstancesOutput) []InstanceDetail {
 
 			instanceJson, err := json.MarshalIndent(instance, "", "  ")
 			if err != nil {
-				log.Fatal(err.Error())
+				fmt.Printf("error marshaling data: %s\n", err)
+				os.Exit(1)
 			}
 
 			// get the remaining details:
@@ -77,7 +81,8 @@ func getTableValue(raw *string) string {
 
 func fetchEc2Data() []InstanceDetail {
 	if awsClient == nil {
-		log.Fatal("AWS client was not intialized prior to fetch.")
+		fmt.Println("AWS client was not intialized prior to fetch.")
+		os.Exit(1)
 	}
 	output, err := awsClient.DescribeInstances(
 		context.TODO(),
@@ -87,7 +92,8 @@ func fetchEc2Data() []InstanceDetail {
 		},
 	)
 	if err != nil {
-		log.Fatalf("error fetching data from AWS: %s", err.Error())
+		fmt.Printf("error fetching data from AWS: %s\n", err)
+		os.Exit(1)
 	}
 	return processEc2Data(output)
 }

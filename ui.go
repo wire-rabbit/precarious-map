@@ -155,13 +155,13 @@ func getMarkdown(content string) string {
 		glamour.WithWordWrap(viewport_width),
 	)
 	if err != nil {
-		fmt.Println("unable to get the viewport renderer: ", err.Error())
+		fmt.Printf("unable to get the viewport renderer: %s\n", err)
 		os.Exit(1)
 	}
 
 	str, err := renderer.Render(content)
 	if err != nil {
-		fmt.Println("unable to render the JSON viewport: ", err.Error())
+		fmt.Printf("unable to render the JSON viewport: %s\n", err)
 		os.Exit(1)
 	}
 
@@ -177,11 +177,11 @@ func getJsonViewport(content string) viewport.Model {
 func startUI(options AppOptions) {
 
 	m := model{table: getTableLayout([]InstanceDetail{}), selectedWidget: table_selected}
-	m.viewport = getJsonViewport("*Initializing...*")
+	m.viewport = getJsonViewport("*Waiting for data...*")
 	m.fetchFunction = fetchEc2Data
 
 	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
-		fmt.Println("Unable to start the UI:", err.Error())
+		fmt.Printf("Unable to start the UI: %s\n", err)
 		os.Exit(1)
 	}
 }

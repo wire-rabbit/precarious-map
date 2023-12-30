@@ -20,14 +20,21 @@ const helpText = `
 
   Options:
   * --help    - show this text and exit
+  * --profile - (required) set the AWS CLI profile to use for authentication
   * --region  - set the AWS region (defaults to 'us-east-1')
-  * --profile - set the AWS CLI profile to use for authentication
 `
+const missingProfileWarning = "  Please supply the AWS profile name to use.\n"
 
 func HandleOptions(writer io.Writer, help bool, region string, profile string) AppOptions {
 
 	if help {
 		fmt.Fprintf(writer, helpText)
+		return AppOptions{Help: true}
+	}
+
+	if profile == "" {
+		// if no profile is set, provide a warning and show usage:
+		fmt.Fprintf(writer, missingProfileWarning+helpText)
 		return AppOptions{Help: true}
 	}
 

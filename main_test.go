@@ -20,9 +20,9 @@ func TestHandleOptions(t *testing.T) {
 			want: AppOptions{Help: true},
 		},
 		{
-			desc:   "region supplied",
+			desc:   "region supplied without profile",
 			region: "us-west-2",
-			want:   AppOptions{Region: "us-west-2"},
+			want:   AppOptions{Help: true},
 		},
 		{
 			desc:    "profile supplied",
@@ -37,7 +37,11 @@ func TestHandleOptions(t *testing.T) {
 		got := HandleOptions(&buffer, test.help, test.region, test.profile)
 
 		if test.help && buffer.String() != helpText {
-			t.Errorf("%s: help text want: %q but got %q", test.desc, helpText, buffer.String())
+			t.Errorf("%s: help text want %q but got %q", test.desc, helpText, buffer.String())
+		}
+
+		if test.profile == "" && !test.help && buffer.String() != missingProfileWarning+helpText {
+			t.Errorf("%s: want %q but got %q", test.desc, missingProfileWarning+helpText, buffer.String())
 		}
 
 		if test.want != got {
