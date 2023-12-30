@@ -9,7 +9,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-var baseStyle = lipgloss.NewStyle()
+var baseStyle = lipgloss.NewStyle().
+	BorderStyle(lipgloss.DoubleBorder())
 
 type FetchFunctionType func() []InstanceDetail
 
@@ -34,6 +35,8 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
 	case FetchFunctionType:
 		m.instances = msg()
@@ -45,7 +48,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	return m, nil
+	m.table, cmd = m.table.Update(msg)
+	return m, cmd
 }
 
 func (m model) View() string {
@@ -82,7 +86,23 @@ func getTableLayout(instances []InstanceDetail) table.Model {
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
+		table.WithHeight(10),
+		table.WithFocused(true),
 	)
+
+	s := table.DefaultStyles()
+	s.Header = s.Header.
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color("240")).
+		BorderBottom(true).
+		Bold(false)
+
+	s.Selected = s.Selected.
+		Foreground(lipgloss.Color("229")).
+		Background(lipgloss.Color("57")).
+		Bold(false)
+
+	t.SetStyles(s)
 
 	return t
 }
