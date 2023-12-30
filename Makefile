@@ -7,5 +7,8 @@ fmt:
 vet: fmt
 		go vet ./...
 
-build: vet
+test: vet
+		go test ./...
+
+build: test
 		go build
