@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -45,6 +46,12 @@ func processEc2Data(data *ec2.DescribeInstancesOutput) []InstanceDetail {
 					break
 				}
 			}
+
+			instanceJson, err := json.MarshalIndent(instance, "", "  ")
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
 			// get the remaining details:
 			details = append(details, InstanceDetail{
 				InstanceId:       getTableValue(instance.InstanceId),
@@ -54,6 +61,7 @@ func processEc2Data(data *ec2.DescribeInstancesOutput) []InstanceDetail {
 				PrivateIpAddress: getTableValue(instance.PrivateIpAddress),
 				PublicIpAddress:  getTableValue(instance.PublicIpAddress),
 				Name:             name,
+				JSON:             string(instanceJson),
 			})
 		}
 	}

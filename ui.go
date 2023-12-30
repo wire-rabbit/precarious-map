@@ -16,6 +16,8 @@ const (
 	viewport_selected
 )
 
+const viewport_width = 78
+
 var baseStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder())
 
@@ -32,14 +34,16 @@ type InstanceDetail struct {
 	PrivateIpAddress string
 	PublicIpAddress  string
 	Name             string
+	JSON             string
 }
 
 type model struct {
-	table         table.Model
-	viewport      viewport.Model
-	selected      uint
-	instances     []InstanceDetail
-	fetchFunction FetchFunctionType
+	table            table.Model
+	viewport         viewport.Model
+	selectedWidget   uint
+	selectedInstance uint
+	instances        []InstanceDetail
+	fetchFunction    FetchFunctionType
 }
 
 func (m model) Init() tea.Cmd {
@@ -53,20 +57,33 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case FetchFunctionType:
 		m.instances = msg()
 		m.table = getTableLayout(m.instances)
+		if len(m.instances) > 0 {
+			content := fmt.Sprintf("```json\n%s\n```", m.instances[m.table.Cursor()].JSON)
+			m.viewport.SetContent(getMarkdown(content))
+			m.viewport.GotoTop()
+		}
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
+		case "j", "k":
+			if m.selectedWidget == table_selected {
+				if len(m.instances) > 0 {
+					content := fmt.Sprintf("```json\n%s\n```", m.instances[m.table.Cursor()].JSON)
+					m.viewport.SetContent(getMarkdown(content))
+					m.viewport.GotoTop()
+				}
+			}
 		case "tab":
-			if m.selected == table_selected {
-				m.selected = viewport_selected
+			if m.selectedWidget == table_selected {
+				m.selectedWidget = viewport_selected
 			} else {
-				m.selected = table_selected
+				m.selectedWidget = table_selected
 			}
 		}
 	}
 
-	if m.selected == table_selected {
+	if m.selectedWidget == table_selected {
 		m.table, cmd = m.table.Update(msg)
 	} else {
 		m.viewport, cmd = m.viewport.Update(msg)
@@ -75,7 +92,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	if m.selected == table_selected {
+	if m.selectedWidget == table_selected {
 		return fmt.Sprintf("%s\n\n%s", focusedStyle.Render(m.table.View()), baseStyle.Render(m.viewport.View()))
 	}
 	return fmt.Sprintf("%s\n\n%s", baseStyle.Render(m.table.View()), focusedStyle.Render(m.viewport.View()))
@@ -132,14 +149,10 @@ func getTableLayout(instances []InstanceDetail) table.Model {
 	return t
 }
 
-func getJsonViewport(content string) viewport.Model {
-	const width = 78
-
-	vp := viewport.New(width, 20)
-
+func getMarkdown(content string) string {
 	renderer, err := glamour.NewTermRenderer(
 		glamour.WithAutoStyle(),
-		glamour.WithWordWrap(width),
+		glamour.WithWordWrap(viewport_width),
 	)
 	if err != nil {
 		fmt.Println("unable to get the viewport renderer: ", err.Error())
@@ -152,14 +165,18 @@ func getJsonViewport(content string) viewport.Model {
 		os.Exit(1)
 	}
 
-	vp.SetContent(str)
+	return str
+}
 
+func getJsonViewport(content string) viewport.Model {
+	vp := viewport.New(viewport_width, 20)
+	vp.SetContent(getMarkdown(content))
 	return vp
 }
 
 func startUI(options AppOptions) {
 
-	m := model{table: getTableLayout([]InstanceDetail{}), selected: table_selected}
+	m := model{table: getTableLayout([]InstanceDetail{}), selectedWidget: table_selected}
 	m.viewport = getJsonViewport("*Initializing...*")
 	m.fetchFunction = fetchEc2Data
 
