@@ -16,7 +16,7 @@ func getAwsClient(options AppOptions) *ec2.Client {
 	if options.Profile != "" {
 		cfg, err := config.LoadDefaultConfig(
 			context.Background(),
-			config.WithSharedConfigProfile("iamadmin-general"),
+			config.WithSharedConfigProfile(options.Profile),
 		)
 		if err != nil {
 			fmt.Printf("error setting up AWS client: %s\n", err)
