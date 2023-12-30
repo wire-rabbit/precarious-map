@@ -18,11 +18,21 @@ const (
 
 const viewport_width = 78
 
+const UiHelpText = `
+tab selects | up/k and down/j to select or scroll | q to quit	
+`
+
 var baseStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder())
 
 var focusedStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.DoubleBorder())
+
+var helpStyle = lipgloss.NewStyle().
+	Width(viewport_width).
+	Foreground(lipgloss.Color("#A8A8F8")).
+	Align(lipgloss.Left).
+	PaddingLeft(1)
 
 type FetchFunctionType func() []InstanceDetail
 
@@ -96,10 +106,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
+	baseContent := ""
 	if m.selectedWidget == table_selected {
-		return fmt.Sprintf("%s\n\n%s", focusedStyle.Render(m.table.View()), baseStyle.Render(m.viewport.View()))
+		baseContent = fmt.Sprintf("%s\n\n%s", focusedStyle.Render(m.table.View()), baseStyle.Render(m.viewport.View()))
+	} else {
+		baseContent = fmt.Sprintf("%s\n\n%s", baseStyle.Render(m.table.View()), focusedStyle.Render(m.viewport.View()))
 	}
-	return fmt.Sprintf("%s\n\n%s", baseStyle.Render(m.table.View()), focusedStyle.Render(m.viewport.View()))
+	return baseContent + helpStyle.Render(UiHelpText)
 }
 
 func getTableData(f FetchFunctionType) tea.Cmd {
