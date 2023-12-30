@@ -35,7 +35,7 @@ If the output looks acceptable, you can deploy the two servers with:
 ```bash
 terraform apply
 ```
-It will ask the same two questions and then actually deploy the infrastructure to your account.
+It will ask the same two questions (along with one final confirmation) and then actually deploy the infrastructure to your account.
 
 Running `precarious-map` once the deploy has completed, for the `us-east-1` region, will show the two servers (along with others you may have in that region).
 
