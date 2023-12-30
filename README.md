@@ -11,7 +11,7 @@ Usage:
 ./precarious-map --profile devs --region us-west-2
 ```
 
-<img width="800" src="./img/precarious-map-demo.gif" />
+<img src="./img/precarious-map-demo.gif" />
 
 An example Terraform deployment to test the tool is included under `example-setup`. It deploys two small `t2.micro` ubuntu servers. (Note, of course, that running servers on AWS - even for a very short time - may not be free of charge.)
 
