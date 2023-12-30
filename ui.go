@@ -5,11 +5,21 @@ import (
 	"os"
 
 	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
 )
 
+const (
+	table_selected = iota
+	viewport_selected
+)
+
 var baseStyle = lipgloss.NewStyle().
+	BorderStyle(lipgloss.NormalBorder())
+
+var focusedStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.DoubleBorder())
 
 type FetchFunctionType func() []InstanceDetail
@@ -26,6 +36,8 @@ type InstanceDetail struct {
 
 type model struct {
 	table         table.Model
+	viewport      viewport.Model
+	selected      uint
 	instances     []InstanceDetail
 	fetchFunction FetchFunctionType
 }
@@ -45,15 +57,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
+		case "tab":
+			if m.selected == table_selected {
+				m.selected = viewport_selected
+			} else {
+				m.selected = table_selected
+			}
 		}
 	}
 
-	m.table, cmd = m.table.Update(msg)
+	if m.selected == table_selected {
+		m.table, cmd = m.table.Update(msg)
+	} else {
+		m.viewport, cmd = m.viewport.Update(msg)
+	}
 	return m, cmd
 }
 
 func (m model) View() string {
-	return baseStyle.Render(m.table.View())
+	if m.selected == table_selected {
+		return fmt.Sprintf("%s\n\n%s", focusedStyle.Render(m.table.View()), baseStyle.Render(m.viewport.View()))
+	}
+	return fmt.Sprintf("%s\n\n%s", baseStyle.Render(m.table.View()), focusedStyle.Render(m.viewport.View()))
 }
 
 func getTableData(f FetchFunctionType) tea.Cmd {
@@ -107,9 +132,35 @@ func getTableLayout(instances []InstanceDetail) table.Model {
 	return t
 }
 
+func getJsonViewport(content string) viewport.Model {
+	const width = 78
+
+	vp := viewport.New(width, 20)
+
+	renderer, err := glamour.NewTermRenderer(
+		glamour.WithAutoStyle(),
+		glamour.WithWordWrap(width),
+	)
+	if err != nil {
+		fmt.Println("unable to get the viewport renderer: ", err.Error())
+		os.Exit(1)
+	}
+
+	str, err := renderer.Render(content)
+	if err != nil {
+		fmt.Println("unable to render the JSON viewport: ", err.Error())
+		os.Exit(1)
+	}
+
+	vp.SetContent(str)
+
+	return vp
+}
+
 func startUI(options AppOptions) {
 
-	m := model{table: getTableLayout([]InstanceDetail{})}
+	m := model{table: getTableLayout([]InstanceDetail{}), selected: table_selected}
+	m.viewport = getJsonViewport("*Initializing...*")
 	m.fetchFunction = fetchEc2Data
 
 	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
