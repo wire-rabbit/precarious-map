@@ -61,6 +61,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			content := fmt.Sprintf("```json\n%s\n```", m.instances[m.table.Cursor()].JSON)
 			m.viewport.SetContent(getMarkdown(content))
 			m.viewport.GotoTop()
+		} else {
+			content := fmt.Sprintf("# AWS returned no data!")
+			m.viewport.SetContent(getMarkdown(content))
+			m.viewport.GotoTop()
 		}
 	case tea.KeyMsg:
 		switch msg.String() {
